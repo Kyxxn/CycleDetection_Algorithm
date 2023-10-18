@@ -86,6 +86,7 @@ bool cycle_DFS(Graph* graph, int V, int parent, int* cycleCount){
             }
             // 2. 방문한 정점이고 나를 호출한 부모 정점일 때, 사이클 발견
             else if(graph->finished[temp->vertex]){
+                // 스택에 넣어 순방향 출력
                 Stack s;
                 stack_Init(&s);
                 
@@ -98,15 +99,19 @@ bool cycle_DFS(Graph* graph, int V, int parent, int* cycleCount){
                 printCycle(&s, temp->vertex, *cycleCount + 1);
                 
                 printf("역방향 간선 : %d -> %d\n\n", V, temp->vertex);
+                // 사이클에 대해 종료하고 해당 정점이 역방향 간선임을 체크 후 참을 반환
                 graph->finished[V] = false;
                 graph->back[V] = true;
                 return true;
-            }else if(!graph->finished[temp->vertex] && graph->visited[temp->vertex]){
+            }
+            // 이미 방문한 정점이고, 다른 사이클의 역방향 간선으로 존재하는 경우
+            else if(!graph->finished[temp->vertex] && graph->visited[temp->vertex]){
                 if(cycle_DFS(graph, temp->vertex, V, cycleCount)) (*cycleCount)++;
             }
             temp = temp->link;
         }
     }
+    // 인접리스트를 모두 방문해도 사이클을 찾지 못하면 거짓을 반환
     graph->finished[V] = false;
     return false;
 }
@@ -114,6 +119,11 @@ bool cycle_DFS(Graph* graph, int V, int parent, int* cycleCount){
 int main(void){
     int vertex = 6;
     Graph* graph = createGraph(vertex);
+    
+    // 정점 개수 = 6, 간선 개수 = 8, 그래프 내의 사이클 총 개수 = 3
+    // 1번 사이클 : 2 -> 4 -> 5 -> 2
+    // 2번 사이클 : 2 -> 3 -> 5 -> 2
+    // 3번 사이클 : 0 -> 2 -> 3 -> 0
     addEdge(graph, 0, 1);
     addEdge(graph, 0, 2);
     
@@ -127,6 +137,7 @@ int main(void){
     addEdge(graph, 5, 2);
     
     int cycleCount = 0;
+    // 모든 정점에 대해 cycle_DFS 실행
     for(int i=0; i<vertex; i++){
         if(!graph->visited[i] && cycle_DFS(graph, i, -1, &cycleCount)){
             cycleCount++;
@@ -137,3 +148,4 @@ int main(void){
     free(graph);
     return 0;
 }
+
